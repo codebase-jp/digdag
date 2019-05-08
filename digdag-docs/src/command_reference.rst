@@ -235,7 +235,7 @@ Updates the executable binary file to the latest version or specified version. E
 .. code-block:: console
 
     $ digdag selfupdate
-    $ digdag selfupdate 0.9.33
+    $ digdag selfupdate 0.9.36
 
 Server-mode commands
 ----------------------------------
@@ -304,6 +304,13 @@ Runs a digdag server. --memory or --database option is required. Examples:
 
   Example: ``--disable-executor-loop``
 
+:command:`--disable-scheduler`
+  Disable a schedule executor on this server.
+
+  This option is useful when you want to disable all schedules without modifying workflow files. See also ``--disable-executor-loop`` option.
+
+  Example: ``--disable-scheduler``
+
 :command:`-p, --param KEY=VALUE`
   Add a session parameter (use multiple times to set many parameters) in KEY=VALUE syntax. This parameter is available using ``${...}`` syntax in the YAML file, or using language API.
 
@@ -349,6 +356,8 @@ In the config file, following parameters are available
 * database.idleTimeout (seconds in integer, default: 600)
 * database.validationTimeout (seconds in integer, default: 5)
 * database.maximumPoolSize (integer, default: available CPU cores * 32)
+* database.leakDetectionThreshold (HikariCP leakDetectionThreshold milliseconds in integer. default: 0. To enable, set to >= 2000.)
+* database.migrate (enable DB migration. default: true)
 * archive.type (type of project archiving, "db" or "s3". default: "db")
 * archive.s3.endpoint (string. default: "s3.amazonaws.com")
 * archive.s3.bucket (string)
@@ -369,6 +378,7 @@ In the config file, following parameters are available
 * executor.attempt_ttl (string. default: 7d. An attempt is killed if it is running longer than this period.)
 * api.max_attempts_page_size (integer. The max number of rows of attempts in api response)
 * api.max_sessions_page_size (integer. The max number of rows of sessions in api response)
+* api.max_archive_total_size_limit (integer. The maximum size of an archived project. i.e. ``digdag push`` size. default: 2MB(2\*1024\*1024))
 
 
 Secret Encryption Key
@@ -531,6 +541,20 @@ Kills a session attempt. Examples:
     $ digdag kill 32
 
 
+projects
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: console
+
+    $ digdag projects [name]
+
+Shows list of projects or details of a project. Examples:
+
+.. code-block:: console
+
+    $ digdag projects
+    $ digdag projects myproj
+
 workflows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -608,6 +632,7 @@ backfill
 
 .. code-block:: console
 
+    $ digdag backfill <schedule-id>
     $ digdag backfill <project-name> <name>
 
 Starts sessions of a schedule for past session times.
@@ -637,8 +662,9 @@ reschedule
 .. code-block:: console
 
     $ digdag reschedule <schedule-id>
+    $ digdag reschedule <project-name> <name>
 
-Skips schedule forward to a future time. To run past schedules, use backfill instead.
+Skips a workflow schedule forward to a future time. To run past schedules, use backfill instead.
 
 :command:`-s, --skip N`
   Skips specified number of schedules from now. This number "N" doesn't mean number of sessions to be skipped. "N" is the number of sessions to be skipped.

@@ -12,7 +12,7 @@ apply plugin: 'maven'
 
 allprojects {
     group = 'io.digdag'
-    version = '0.9.34-SNAPSHOT'
+    version = '0.9.37-SNAPSHOT'
 
     ext {
         isSnapshotRelease = version.endsWith('-SNAPSHOT')
@@ -111,6 +111,7 @@ subprojects {
 
     ext {
         jacksonVersion = "2.8.11"
+        jacksonDatabindVersion = "2.8.11.1"
         awsJavaSdkVersion = "1.11.63"
         guavaVersion = "19.0"
     }
@@ -321,7 +322,8 @@ project(':digdag-ui') {
 
         doFirst {
             exec {
-                commandLine System.env.NPM ?: "npm", "install"
+                // npm ci requires npm version 5.7 or more.
+                commandLine System.env.NPM ?: "npm", "ci"
             }
             exec {
                 commandLine System.env.NPM ?: "npm", "run", "build"
